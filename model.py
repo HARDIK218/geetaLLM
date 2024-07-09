@@ -1,115 +1,147 @@
-import warnings
 import streamlit as st
+import warnings
 warnings.filterwarnings('ignore')
 
 from langchain.text_splitter import CharacterTextSplitter
-#from langchain.document_transformers import Html2TextTransformer
-#from langchain.document_loaders import AsyncChromiumLoader
-
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-
 from langchain.prompts import PromptTemplate
 from langchain.schema.runnable import RunnablePassthrough
-#from langchain.llms import HuggingFacePipeline
 from langchain.chains import LLMChain
-
-
-import os
-import re
-#import requests
-#from google.colab import userdata
-#from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
-
-def format_response (response: str) -> str:
-    entries = re.split(r" (?<=]), (?=\[)", response)
-    return [entry.strip("[]") for entry in entries]
-
-
-os.environ["GROQ_API_KEY"] = "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"
-
-mistral_llm = ChatGroq(temperature=0.2, model_name="llama3-70b-8192")
-
+import os
 import pandas as pd
 from bs4 import BeautifulSoup
-from html2text import HTML2Text
 
-# Replace 'your_file.csv' with the actual path to your CSV file
+# Set up API key for ChatGroq
+os.environ["GROQ_API_KEY"] = "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"
+
+# Streamlit app title and description
+st.set_page_config(page_title="Geeta GPT", page_icon="🕉️", layout="wide")
+
+# Custom CSS to add background image
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url("/Users/hardikyadav/PycharmProjects/geeta_llama3/26012a0f4f7ffe3fe597bd39299ff39c.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    .title {
+        text-align: center; 
+        color: #4B8BBE;
+    }
+    .subtitle {
+        text-align: center; 
+        color: #306998;
+    }
+    .response-box {
+        border: 2px solid #4B8BBE; 
+        border-radius: 10px; 
+        padding: 10px; 
+        background-color: rgba(249, 249, 249, 0.8);
+    }
+    .response-text {
+        color: #306998;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+st.markdown("<h1 class='title'>Geeta GPT</h1>", unsafe_allow_html=True)
+st.markdown("<h3 class='subtitle'>Ask a question and get advice based on Bhagwad Geeta</h3>", unsafe_allow_html=True)
+
+# User input for question
+user_question = st.text_input("Enter your question:", "")
+
+# Initialize the ChatGroq model
+try:
+    mistral_llm = ChatGroq(temperature=0.2, model_name="llama3-70b-8192")
+except Exception as e:
+    st.error("Error initializing ChatGroq model.")
+    mistral_llm = None
+
+# Read the CSV file
 csv_file_path = 'modified_meaning.csv'
-column_name = 'meaning'
-df = pd.read_csv(csv_file_path, nrows=600)
+try:
+    df = pd.read_csv(csv_file_path, nrows=600)
+except Exception as e:
+    st.error("Error loading CSV file.")
+    df = None
 
-docs_transformed = []
+if df is not None:
+    column_name = 'meaning'
 
-# Create an HTML2Text object
-html2text = HTML2Text()
+    # Transform content from the specified column
+    docs_transformed = []
 
-# Extract data from the specified column into a list
-for index, row in df.iterrows():
-    html_content = row[column_name]
-    html_content = str(html_content)
-    soup = BeautifulSoup(html_content, 'html.parser')
-    plain_text = html2text.handle(str(soup))
-    docs_transformed.append(plain_text)
+    for index, row in df.iterrows():
+        html_content = row[column_name]
+        html_content = str(html_content)
+        soup = BeautifulSoup(html_content, 'html.parser')
+        plain_text = soup.get_text(separator="\n")
+        docs_transformed.append(plain_text)
 
-class PageContentWrapper:
-    def __init__(self, page_content, metadata={}):
-        self.page_content = page_content
-        self.metadata = metadata
+    class PageContentWrapper:
+        def __init__(self, page_content, metadata={}):
+            self.page_content = page_content
+            self.metadata = metadata
 
+    # Wrap and chunk documents
+    docs_transformed_wrapped = [PageContentWrapper(content) for content in docs_transformed]
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=10)
+    chunked_documents = text_splitter.split_documents(docs_transformed_wrapped)
 
-# Assuming plain_text is the content you want to chunk
-docs_transformed_wrapped = [PageContentWrapper(content) for content in docs_transformed]
+    # Initialize FAISS database
+    try:
+        db = FAISS.from_documents(chunked_documents, HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2'))
+        retriever = db.as_retriever()
+    except Exception as e:
+        st.error("Error initializing FAISS database.")
+        retriever = None
 
-# Now use docs_transformed_wrapped with CharacterTextSplitter
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=10)
-chunked_documents = text_splitter.split_documents(docs_transformed_wrapped)
+    # Create prompt template
+    prompt_template = """
+    Note: While returning the final answer, please print a little bit of context from docs that you have used to generate the answer.
+    ### [INST] Instruction: Answer the question based on your docs knowledge. Here is context to help:
 
+    {context}
 
-db = FAISS.from_documents(chunked_documents,
-                          HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2'))
+    ### QUESTION:
+    {user_question} [/INST]
+    """
 
-retriever = db.as_retriever()
+    prompt = PromptTemplate(input_variables=["context", "user_question"], template=prompt_template)
 
+    if mistral_llm is not None:
+        llm_chain = LLMChain(llm=mistral_llm, prompt=prompt)
+    else:
+        llm_chain = None
 
-# Create prompt template
-prompt_template = """
-note while returning final answer please print little bit of context from docs that you have used to generate answer
-### [INST] Instruction: Answer the question based on your docs knowledge. Here is context to help:
+    if retriever is not None and llm_chain is not None:
+        rag_chain = ({"context": retriever, "user_question": RunnablePassthrough()} | llm_chain)
+    else:
+        rag_chain = None
 
-{context}
+    if user_question and rag_chain:
+        try:
+            result = rag_chain.invoke(user_question)
+            text = result['text']
 
-### QUESTION:
-{question} [/INST]
- """
+            # Format the response text
+            formatted_text = text.replace('\n', ' ').replace('. ', '.\n\n')
 
-# Create prompt from prompt template
-prompt = PromptTemplate(
-    input_variables=["context", "question"],
-    template=prompt_template,
-)
-
-
-# Create llm chain
-llm_chain = LLMChain(llm=mistral_llm, prompt=prompt)
-
-
-rag_chain = (
- {"context": retriever, "question": RunnablePassthrough()}
-    | llm_chain
-)
-#result = rag_chain.invoke('jd')
-
-result = rag_chain.invoke("I have recently changed my office team and now i am not felling inclined what should i do")
-text = result['text']
-
-# Add line breaks to format the text as a paragraph
-formatted_text = text.replace('\n', ' ')  # Replace existing line breaks with spaces
-formatted_text = formatted_text.replace('. ', '.\n\n')  # Add double line breaks after periods
-
-# Print the formatted text
-#print(formatted_text)
-
-print(formatted_text)
-
+            # Display the response in a box
+            st.markdown("<div class='response-box'>", unsafe_allow_html=True)
+            st.markdown(f"<p class='response-text'>{formatted_text}</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        except Exception as e:
+            st.error("Error processing question.")
+    elif not user_question:
+        st.write("Please enter a question to get advice based on Bhagwad Geeta.")
+    else:
+        st.write("Please ensure the model and retriever are initialized correctly.")
+else:
+    st.write("Please ensure the CSV file is loaded correctly.")

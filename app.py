@@ -10,32 +10,33 @@ from langchain.schema.runnable import RunnablePassthrough
 from langchain.chains import LLMChain
 from langchain_groq import ChatGroq
 import os
-import re
 import pandas as pd
 from bs4 import BeautifulSoup
 
 # Set up API key for ChatGroq
-os.environ["GROQ_API_KEY"] = "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"
+os.environ["GROQ_API_KEY"] = "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"
+
+# Streamlit app title and description
+st.set_page_config(page_title="Geeta GPT", page_icon="🕉️", layout="wide")
+st.markdown("<h1 style='text-align: center; color: #4B8BBE;'>Geeta GPT</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #306998;'>Ask a question and get advice based on Bhagwad Geeta</h3>", unsafe_allow_html=True)
+
+# User input for question
+user_question = st.text_input("Enter your question:", "")
 
 # Initialize the ChatGroq model
 try:
     mistral_llm = ChatGroq(temperature=0.2, model_name="llama3-70b-8192")
-    st.write("ChatGroq model initialized successfully.")
 except Exception as e:
-    st.error(f"Error initializing ChatGroq model: {e}")
+    st.error(f"Error initializing ChatGroq model.")
     mistral_llm = None
-
-# Streamlit app title and description
-st.title("Geeta GPT")
-st.write("Ask a question and get advice based on Bhagwad Geeta")
 
 # Read the CSV file
 csv_file_path = 'modified_meaning.csv'
 try:
     df = pd.read_csv(csv_file_path, nrows=600)
-    st.write("CSV file loaded successfully.")
 except Exception as e:
-    st.error(f"Error loading CSV file: {e}")
+    st.error(f"Error loading CSV file.")
     df = None
 
 if df is not None:
@@ -65,14 +66,13 @@ if df is not None:
     try:
         db = FAISS.from_documents(chunked_documents, HuggingFaceEmbeddings(model_name='sentence-transformers/all-mpnet-base-v2'))
         retriever = db.as_retriever()
-        st.write("FAISS database initialized successfully.")
     except Exception as e:
-        st.error(f"Error initializing FAISS database: {e}")
+        st.error(f"Error initializing FAISS database.")
         retriever = None
 
     # Create prompt template
     prompt_template = """
-    note while returning final answer please print little bit of context from docs that you have used to generate answer
+    Note: While returning the final answer, please print a little bit of context from docs that you have used to generate the answer.
     ### [INST] Instruction: Answer the question based on your docs knowledge. Here is context to help:
 
     {context}
@@ -93,9 +93,6 @@ if df is not None:
     else:
         rag_chain = None
 
-    # User input for question
-    user_question = st.text_input("Enter your question:")
-
     if user_question and rag_chain:
         try:
             result = rag_chain.invoke(user_question)
@@ -104,13 +101,15 @@ if df is not None:
             # Format the response text
             formatted_text = text.replace('\n', ' ').replace('. ', '.\n\n')
 
-            # Display the response
-            st.write(formatted_text)
+            # Display the response in a box
+            st.markdown("<div style='border: 2px solid #4B8BBE; border-radius: 10px; padding: 10px; background-color: #f9f9f9;'>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color: #306998;'>{formatted_text}</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Error processing question: {e}")
+            st.error(f"Error processing question.")
     elif not user_question:
         st.write("Please enter a question to get advice based on Bhagwad Geeta.")
     else:
-        st.write("Please initialize the model and retriever correctly.")
+        st.write("Please ensure the model and retriever are initialized correctly.")
 else:
     st.write("Please ensure the CSV file is loaded correctly.")
