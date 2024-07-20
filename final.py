@@ -24,6 +24,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### Navigation")
 navigation = st.sidebar.radio("Go to", ["Geeta-GPT", "Home", "About", "Contact Us"])
 
+
 # Custom CSS to add background image and other styles
 st.markdown(
     """
@@ -54,7 +55,7 @@ st.markdown(
         background-color: rgba(249, 249, 249, 0.8);
     }
     .response-text {
-        color: #00000;
+        color: #FFFFFF;
     }
     .submit-btn {
         background-color: #4B8BBE; 
@@ -67,6 +68,39 @@ st.markdown(
     }
     .submit-btn:hover {
         background-color: #3a8cbf;
+    }
+    .content-box {
+        background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
+        border-radius: 10px; 
+        padding: 20px; 
+        margin: 20px auto; 
+        width: 80%; /* Adjust width as needed */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+        text-align: center; /* Center-align the content */
+    }
+    .mantra {
+        font-size: 30px;
+        font-weight: bold;
+        color: orange;
+        animation: fadeIn 2s ease-in-out;
+        background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
+        border-radius: 10px; 
+        padding: 20px; 
+        margin: 20px auto; 
+        width: 80%; /* Adjust width as needed */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+        text-align: center; /* Center-align the content */
+    }
+    p{
+    font-size:20px;
+    }
+    .mantra-meaning {
+        font-size: 20px;
+        color: black;
+    }
+    @keyframes fadeIn {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
     }
     </style>
     """, unsafe_allow_html=True
@@ -84,23 +118,28 @@ if navigation == "Geeta-GPT":
 
 # Content for Home, About, and Contact Us sections
 home_content = """
-<div id='home'>
+<div class='content-box' id='home'>
     <h2>Welcome to Geeta GPT</h2>
     <p>This application provides advice and answers based on the teachings of the Bhagavad Gita. Simply enter your question to get started.</p>
+    <p class='mantra'>ॐ कृष्णाय वासुदेवाय हरये परमात्मने॥<br>प्रणत: क्लेशनाशाय गोविंदाय नमो नम:॥</p>
+    <p class='mantra-meaning'>English Translation: "Om Krishnaya Vasudevaya Haraye Paramatmane, Pranatah Kleshanashaya Govindaya Namo Namah".<br>Meaning: This mantra is a salutation to Lord Krishna, the Supreme Soul, who removes the sufferings of the devotees who surrender to Him.</p>
 </div>
 """
 about_content = """
-<div id='about'>
+<div class='content-box' id='about'>
     <h2>About Geeta GPT</h2>
     <p>Geeta GPT is powered by advanced AI technology, utilizing the wisdom of the Bhagavad Gita to offer guidance and insights. Our goal is to make the ancient teachings accessible to everyone.</p>
 </div>
 """
 contact_us_content = """
-<div id='contact-us'>
+<div class='content-box' id='contact-us'>
     <h2>Contact Us</h2>
     <p>If you have any questions or feedback, please reach out to us at <a href="mailto:support@geetagpt.com">support@geetagpt.com</a>.</p>
 </div>
 """
+
+
+
 
 # Display content based on navigation selection
 if navigation == "Home":
