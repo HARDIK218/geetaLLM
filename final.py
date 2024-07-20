@@ -24,15 +24,13 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### Navigation")
 navigation = st.sidebar.radio("Go to", ["Geeta-GPT", "Home", "About", "Contact Us"])
 
-
-# Custom CSS to add background image and other styles
 st.markdown(
     """
     <style>
     .stApp {
         background: url('https://blog.cdn.level.game/2024/05/bhagavad-gita-6-chapter--meditation-1.webp') no-repeat center center fixed; 
         background-size: cover; 
-        height: 100vh; 
+        height: 100vh;
         overflow: auto;  
     }
     .title-container {
@@ -41,13 +39,15 @@ st.markdown(
         padding: 20px; 
         margin: auto; 
         width: 60%; /* Adjust width as needed */
-        text-align: center; 
+        text-align: center;
+        color: black;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
     }
     input::placeholder {
         color: #f28f2c;
         opacity: 1; 
     }
+    
     .response-box {
         border: 2px solid #4B8BBE; 
         border-radius: 10px; 
@@ -55,7 +55,7 @@ st.markdown(
         background-color: rgba(249, 249, 249, 0.8);
     }
     .response-text {
-        color: #FFFFFF;
+        color: #14213d;
     }
     .submit-btn {
         background-color: #4B8BBE; 
@@ -73,7 +73,8 @@ st.markdown(
         background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
         border-radius: 10px; 
         padding: 20px; 
-        margin: 20px auto; 
+        margin: 20px auto;
+        color: black;
         width: 80%; /* Adjust width as needed */
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
         text-align: center; /* Center-align the content */
@@ -91,16 +92,35 @@ st.markdown(
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
         text-align: center; /* Center-align the content */
     }
-    p{
-    font-size:20px;
-    }
     .mantra-meaning {
         font-size: 20px;
         color: black;
     }
+    h1{
+        color: orange;
+    }
+    
+    h2{
+        color: orange;
+    }
+    
+    h3{
+        color: orange;
+    }
+    
     @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
+    }
+
+    /* Sidebar header */
+    .css-1v3fvcr {
+        color: white !important;
+    }
+
+    /* Sidebar text */
+    .css-10trblm {
+        color: white !important;
     }
     </style>
     """, unsafe_allow_html=True
@@ -138,9 +158,6 @@ contact_us_content = """
 </div>
 """
 
-
-
-
 # Display content based on navigation selection
 if navigation == "Home":
     st.markdown(home_content, unsafe_allow_html=True)
@@ -148,6 +165,7 @@ elif navigation == "About":
     st.markdown(about_content, unsafe_allow_html=True)
 elif navigation == "Contact Us":
     st.markdown(contact_us_content, unsafe_allow_html=True)
+
 else:
     # Geeta GPT functionality
 
