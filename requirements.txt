@@ -1,7 +1,7 @@
 torch
 datasets
 transformers
-tensorflow
+tensorflow==2.16.1
 langchain
 playwright
 html2text

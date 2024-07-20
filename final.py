@@ -1,5 +1,6 @@
 import streamlit as st
 import warnings
+
 warnings.filterwarnings('ignore')
 
 from langchain.text_splitter import CharacterTextSplitter
@@ -16,28 +17,43 @@ from bs4 import BeautifulSoup
 os.environ["GROQ_API_KEY"] = "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"
 
 # Streamlit app title and description
-st.set_page_config(page_title="Geeta GPT", page_icon="🕉️", layout="wide")
+st.set_page_config(page_title="कृष्ण वाणी", page_icon="🕉️", layout="wide")
 
 # Sidebar configuration
-st.sidebar.title("Geeta GPT")
+st.sidebar.title("कृष्ण वाणी")
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Navigation")
-navigation = st.sidebar.radio("Go to", ["Geeta-GPT", "Home", "About", "Contact Us"])
+navigation = st.sidebar.radio("Go to", ["कृष्ण वाणी", "Home", "About", "Contact Us"])
+
+
+# Initialize session state for input and history
+# if 'user_question' not in st.session_state:
+#     st.session_state['user_question'] = ""
+# if 'history' not in st.session_state:
+#     st.session_state['history'] = []
+
+
+# # Display previous questions in the sidebar
+# st.sidebar.markdown("### Previous Questions")
+# if st.session_state['history']:
+#     for i, q in enumerate(st.session_state['history']):
+#         st.sidebar.markdown(f"{i + 1}.** {q}")
+
 
 st.markdown(
     """
     <style>
     .stApp {
-        background: url('https://blog.cdn.level.game/2024/05/bhagavad-gita-6-chapter--meditation-1.webp') no-repeat center center fixed; 
-        background-size: cover; 
+        background: url('https://blog.cdn.level.game/2024/05/bhagavad-gita-6-chapter--meditation-1.webp') no-repeat center center fixed;
+        background-size: cover;
         height: 100vh;
-        overflow: auto;  
+        overflow: auto;
     }
     .title-container {
         background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
-        border-radius: 10px; 
-        padding: 20px; 
-        margin: auto; 
+        border-radius: 10px;
+        padding: 20px;
+        margin: auto;
         width: 60%; /* Adjust width as needed */
         text-align: center;
         color: black;
@@ -45,20 +61,21 @@ st.markdown(
     }
     input::placeholder {
         color: #f28f2c;
-        opacity: 1; 
+        opacity: 1;
     }
-    
+
     .response-box {
-        border: 2px solid #4B8BBE; 
-        border-radius: 10px; 
-        padding: 10px; 
+        border: 2px solid #4B8BBE;
+        border-radius: 10px;
+        padding: 10px;
         background-color: rgba(249, 249, 249, 0.8);
     }
     .response-text {
-        color: #14213d;
+        color: #2b2d42;
+        font-size: 20px;
     }
     .submit-btn {
-        background-color: #4B8BBE; 
+        background-color: #4B8BBE;
         color: white;
         border: none;
         border-radius: 5px;
@@ -71,8 +88,8 @@ st.markdown(
     }
     .content-box {
         background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
-        border-radius: 10px; 
-        padding: 20px; 
+        border-radius: 10px;
+        padding: 20px;
         margin: 20px auto;
         color: black;
         width: 80%; /* Adjust width as needed */
@@ -82,12 +99,12 @@ st.markdown(
     .mantra {
         font-size: 30px;
         font-weight: bold;
-        color: orange;
+        color: #bb3e03;
         animation: fadeIn 2s ease-in-out;
         background-color: rgba(255, 255, 255, 0.8); /* White with transparency */
-        border-radius: 10px; 
-        padding: 20px; 
-        margin: 20px auto; 
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px auto;
         width: 80%; /* Adjust width as needed */
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
         text-align: center; /* Center-align the content */
@@ -97,17 +114,17 @@ st.markdown(
         color: black;
     }
     h1{
-        color: orange;
+        color: #ff6700;
     }
-    
+
     h2{
-        color: orange;
+        color: #ff6700;
     }
-    
+
     h3{
-        color: orange;
+        color: #ff6700;
     }
-    
+
     @keyframes fadeIn {
         0% { opacity: 0; }
         100% { opacity: 1; }
@@ -116,6 +133,9 @@ st.markdown(
     /* Sidebar header */
     .css-1v3fvcr {
         color: white !important;
+    }
+    .st-emotion-cache-1sno8jx{
+    color : black;
     }
 
     /* Sidebar text */
@@ -126,11 +146,12 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
+
 # Display the title and subtitle in a box only if navigation is "Geeta-GPT"
-if navigation == "Geeta-GPT":
+if navigation == "कृष्ण वाणी":
     st.markdown(
         "<div class='title-container'>"
-        "<h1 class='title'>Geeta GPT</h1>"
+        "<h1 class='title'>कृष्ण वाणी</h1>"
         "<h3 class='subtitle'>Ask a question and get advice based on Bhagavad Geeta</h3>"
         "</div>",
         unsafe_allow_html=True
@@ -139,7 +160,7 @@ if navigation == "Geeta-GPT":
 # Content for Home, About, and Contact Us sections
 home_content = """
 <div class='content-box' id='home'>
-    <h2>Welcome to Geeta GPT</h2>
+    <h2>Welcome to कृष्ण वाणी</h2>
     <p>This application provides advice and answers based on the teachings of the Bhagavad Gita. Simply enter your question to get started.</p>
     <p class='mantra'>ॐ कृष्णाय वासुदेवाय हरये परमात्मने॥<br>प्रणत: क्लेशनाशाय गोविंदाय नमो नम:॥</p>
     <p class='mantra-meaning'>English Translation: "Om Krishnaya Vasudevaya Haraye Paramatmane, Pranatah Kleshanashaya Govindaya Namo Namah".<br>Meaning: This mantra is a salutation to Lord Krishna, the Supreme Soul, who removes the sufferings of the devotees who surrender to Him.</p>
@@ -147,29 +168,21 @@ home_content = """
 """
 about_content = """
 <div class='content-box' id='about'>
-    <h2>About Geeta GPT</h2>
-    <p>Geeta GPT is powered by advanced AI technology, utilizing the wisdom of the Bhagavad Gita to offer guidance and insights. Our goal is to make the ancient teachings accessible to everyone.</p>
+    <h2>About कृष्ण वाणी</h2>
+    <p>कृष्ण वाणी is powered by advanced AI technology, utilizing the wisdom of the Bhagavad Gita to offer guidance and insights. Our goal is to make the ancient teachings accessible to everyone.</p>
 </div>
 """
 contact_us_content = """
 <div class='content-box' id='contact-us'>
     <h2>Contact Us</h2>
-    <p>If you have any questions or feedback, please reach out to us at <a href="mailto:support@geetagpt.com">support@geetagpt.com</a>.</p>
+    <p>If you have any questions or feedback, please reach out to us at <a href="mailto:krishnavaani100@gmail.com
+">krishnavaani100@gmail.com
+</a>.</p>
 </div>
 """
 
 # Display content based on navigation selection
-if navigation == "Home":
-    st.markdown(home_content, unsafe_allow_html=True)
-elif navigation == "About":
-    st.markdown(about_content, unsafe_allow_html=True)
-elif navigation == "Contact Us":
-    st.markdown(contact_us_content, unsafe_allow_html=True)
-
-else:
-    # Geeta GPT functionality
-
-    # User input for question with placeholder
+if navigation == "कृष्ण वाणी":
     user_question = st.text_input("", "", placeholder="Enter your question")
 
     # Submit button with custom style
@@ -203,10 +216,12 @@ else:
                     plain_text = soup.get_text(separator="\n")
                     docs_transformed.append(plain_text)
 
+
                 class PageContentWrapper:
                     def __init__(self, page_content, metadata={}):
                         self.page_content = page_content
                         self.metadata = metadata
+
 
                 # Wrap and chunk documents
                 docs_transformed_wrapped = [PageContentWrapper(content) for content in docs_transformed]
@@ -224,17 +239,17 @@ else:
                 if faiss_index is not None:
                     # Generate prompt template
                     template = """
-                    You are Geeta-GPT, an AI assistant designed to help with questions related to the Bhagavad Gita. 
-                    Given the following passages and a user's question, provide a comprehensive response based on the teachings of the Bhagavad Gita.
+                        You are Geeta-GPT, an AI assistant designed to help with questions related to the Bhagavad Gita.
+                        Given the following passages and a user's question, provide a comprehensive response based on the teachings of the Bhagavad Gita.
 
-                    Passages:
-                    {context}
+                        Passages:
+                        {context}
 
-                    User Question:
-                    {question}
+                        User Question:
+                        {question}
 
-                    Response:
-                    """
+                        Response:
+                        """
                     prompt_template = PromptTemplate(input_variables=["context", "question"], template=template)
 
                     # Create QA chain
@@ -260,3 +275,16 @@ else:
                         st.error("Error generating response.")
         else:
             st.warning("Please enter a question.")
+
+
+elif navigation == "About":
+    st.markdown(about_content, unsafe_allow_html=True)
+elif navigation == "Contact Us":
+    st.markdown(contact_us_content, unsafe_allow_html=True)
+
+else:
+    st.markdown(home_content, unsafe_allow_html=True)
+    #  functionalityGeeta GPT
+
+    # User input for question with placeholder
+
